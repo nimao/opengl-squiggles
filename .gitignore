@@ -1,0 +1,9 @@
+.qmake.stash
+Makefile
+
+*.o
+moc_*.cpp
+moc_*.h
+*.csv
+
+openglwindow
