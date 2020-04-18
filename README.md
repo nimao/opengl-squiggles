@@ -1,5 +1,3 @@
 # Squiggles
 
 ![Squiggles](gl.gif)
-
-
