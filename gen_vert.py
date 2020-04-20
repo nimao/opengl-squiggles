@@ -8,7 +8,7 @@ from matplotlib.colors import Normalize
 import matplotlib.pyplot as plt
 
 
-x, y = np.mgrid[-5:6:.1, -5:6:.1]
+x, y = np.mgrid[-7:7:.01, -7:7:.01]
 
 pos = np.empty(x.shape + (2,))
 

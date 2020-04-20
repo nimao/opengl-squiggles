@@ -14,10 +14,10 @@
 
 std::vector<GLfloat> read_floats(const std::string&);
 
-class TriangleWindow : public OpenGLWindow
+class MeshWindow : public OpenGLWindow
 {
 public:
-    TriangleWindow();
+    MeshWindow();
 
     void initialize() override;
     void render() override;
@@ -32,9 +32,11 @@ private:
 
     std::vector<GLfloat> vertices;
     std::vector<GLfloat> colors;
+
+    GLuint vao, vbo[2];
 };
 
-TriangleWindow::TriangleWindow()
+MeshWindow::MeshWindow()
     : m_program(0)
     , m_frame(0)
 {
@@ -48,7 +50,7 @@ int main(int argc, char **argv)
     format.setSamples(128);
     format.setDepthBufferSize(16);
 
-    TriangleWindow window;
+    MeshWindow window;
     window.setFormat(format);
     window.resize(640, 480);
     window.show();
@@ -74,22 +76,39 @@ static const char *fragmentShaderSource =
     "   gl_FragColor = col;\n"
     "}\n";
 
-void TriangleWindow::initialize()
+void MeshWindow::initialize()
 {
     m_program = new QOpenGLShaderProgram(this);
     m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource);
     m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
+    m_program->bindAttributeLocation("posAttr", 0);
+    m_program->bindAttributeLocation("colAttr", 1);
     m_program->link();
-    m_posAttr = m_program->attributeLocation("posAttr");
-    m_colAttr = m_program->attributeLocation("colAttr");
+
     m_matrixUniform = m_program->uniformLocation("matrix");
 
     vertices = read_floats("strip.csv");
     colors = read_floats("col.csv");
     
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), &vertices.front(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+    glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(GLfloat), &colors.front(), GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+
+    glEnable(GL_DEPTH_TEST);
 }
 
-void TriangleWindow::render()
+void MeshWindow::render()
 {
     const qreal retinaScale = devicePixelRatio();
     glViewport(0, 0, width() * retinaScale, height() * retinaScale);
@@ -105,17 +124,8 @@ void TriangleWindow::render()
 
     m_program->setUniformValue(m_matrixUniform, matrix);
 
-    glVertexAttribPointer(m_posAttr, 3, GL_FLOAT, GL_FALSE, 0, &vertices.front());
-    glVertexAttribPointer(m_colAttr, 4, GL_FLOAT, GL_FALSE, 0, &colors.front());
-
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-
-    glEnable(GL_DEPTH_TEST);
+    glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, vertices.size() / 3);
-    
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(0);
 
     m_program->release();
 
