@@ -6,4 +6,6 @@ moc_*.cpp
 moc_*.h
 *.csv
 
+*.swp
+
 openglwindow
