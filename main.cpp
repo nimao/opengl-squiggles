@@ -84,7 +84,8 @@ static const char *vertexShaderSource =
     "void main() {\n"
     "   vec4 new_pos;\n"
     "   new_pos = posAttr;\n"
-    "   new_pos.z = sin(posAttr.x * posAttr.y + 0.2*time);\n"
+    //"   new_pos.z = sin(posAttr.x * posAttr.y + 0.2*time);\n"
+    "   new_pos.z = sin((posAttr.x*posAttr.x + posAttr.y*posAttr.y) + 0.2*time);\n"
     "   col = colAttr;\n"
     "   float z = 0.5 + 0.5 * new_pos.z;\n"
     "   col.x = 0.3 - 2.1*z*z + 2.9*z*z*z;\n"
@@ -151,7 +152,7 @@ void MeshWindow::render()
 
     QMatrix4x4 matrix;
     matrix.perspective(60.0f, 4.0f/3.0f, 0.1f, 100.0f);
-    matrix.translate(0, 0, -10);
+    matrix.translate(0, 0, -30);
     matrix.rotate(10.0f * m_frame / screen()->refreshRate(), 0, 1, 0);
 
     m_program->setUniformValue(m_matrixUniform, matrix);
